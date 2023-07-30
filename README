@@ -1,0 +1,10 @@
+LyX Module: Allow for the align/align* environments to display lines frame-by-frame in beamer.
+Copyright: 2023 (c) Udi Fogiel <udifoglle@gmail.com>
+Repository: https://github.com/Udi-Fogiel/GilAd
+License: See LICENSE
+
+Install: copy one of the .moduele files to the layouts folder in LyX's library directory (Help->About LyX), then 
+reconfigure LyX via Tools->Reconfigure. 
+overlay-align23.module is compatibale with LyX's latest stable release (LyX2.3.7), while overlay-align.module 
+is compatible with LyX2.4Beta3 and will be updated with LyX2.4 release.
+The module is based on the code from https://tex.stackexchange.com/a/674713/264024

@@ -1,0 +1,95 @@
+#\DeclareLyXModule{Overlay Align}
+#DescriptionBegin
+#Allow for the align/align* environments to 
+#display lines frame-by-frame.
+#DescriptionEnd
+#
+#Author: Udi Fogiel <udifoglle@gmail.com>
+Format 66
+
+Style OverlayAlign
+  Category              Reasoning
+  Margin                First_Dynamic
+  LatexType             Environment
+  LatexName             overlayalign
+  NextNoIndent          1
+  ResetArgs             1
+  IsTocCaption          1
+  LabelSep              xx
+  ParIndent             MMM
+  ParSkip               0.4
+  ItemSep               0.2
+  TopSep                0.7
+  BottomSep             0.7
+  ParSep                0.3
+  Align                 Block
+  AlignPossible         Left
+  LabelType             Static
+  LabelString           "Overlay Align"
+  LabelFont
+    Shape               Up
+    Series              Bold
+    Color               blue
+  EndFont
+  Preamble
+	\ExplSyntaxOn
+	\makeatother
+	
+	\cs_new_eq:NN \_overlayalign_orig_align: \align
+	\cs_new_eq:NN \end_overlayalign_orig_align: \endalign
+
+	\exp_after:wN \cs_new_eq:NN \exp_after:wN \_overlayalign_orig_starred_align: \cs:w align* \cs_end:
+	\cs_new_eq:NN \end_overlayalign_orig_starred_align: \endalign
+
+	\seq_new:N \l__overlayalign_linesin_seq
+	\seq_new:N \l__overlayalign_linesout_seq
+	\seq_new:N \l__overlayalign_onelinein_seq
+	\seq_new:N \l__overlayalign_onelineout_seq
+
+	\cs_new:Npn \overlayalign_add_alert_to_cells:n #1
+	  {
+		\seq_set_split:Nnn \l__overlayalign_linesin_seq { \\ } { #1 }
+		\seq_map_inline:Nn \l__overlayalign_linesin_seq
+		{	
+			\seq_clear:N \l__overlayalign_onelineout_seq
+			\seq_set_split:Nnn \l__overlayalign_onelinein_seq { & } { ##1 }
+			\seq_map_indexed_inline:Nn \l__overlayalign_onelinein_seq
+			{
+				\int_compare:nNnTF { ####1 } = { 1 }
+				{ \seq_put_right:Nn \l__overlayalign_onelineout_seq { \action<+-|alert@+> { ####2 } } }
+				{ \seq_put_right:Nn \l__overlayalign_onelineout_seq { \action<.-|alert@.> { ####2 } } }
+			}
+			\seq_put_right:Nx \l__overlayalign_linesout_seq { \seq_use:Nnnn \l__overlayalign_onelineout_seq { & } { & } { & } }
+		}
+	  }
+
+	\newenvironment{overlayalign}{
+		\RenewDocumentEnvironment{align}{+b}
+		{
+			\exp_after:wN \cs_set_nopar:Npn \cs:w tagform@ \cs_end: ####1
+				{
+					\cs:w maketag@@@ \cs_end: 
+					{ 
+						\action<.-|alert@.> { ( \ignorespaces ####1 \unskip \cs:w @@italiccorr \cs_end: ) } 
+					}
+				}
+			\overlayalign_add_alert_to_cells:n { ##1 }
+			\begin{_overlayalign_orig_align:}
+				\seq_use:Nnnn \l__overlayalign_linesout_seq { \\ } { \\ } { \\ }
+			\end{_overlayalign_orig_align:}
+		} { }
+		\RenewDocumentEnvironment{align*}{+b}
+		{
+			\overlayalign_add_alert_to_cells:n { ##1 }
+			\begin{_overlayalign_orig_starred_align:}
+				\seq_use:Nnnn \l__overlayalign_linesout_seq { \\ } { \\ } { \\ }
+			\end{_overlayalign_orig_starred_align:}
+		} { }
+	}{ }
+	
+	\makeatletter
+	\ExplSyntaxOff
+  EndPreamble
+  # helpful for when nesting an exercise in an overlayalign.
+  KeepEmpty             1
+End
